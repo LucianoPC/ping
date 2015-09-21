@@ -52,12 +52,12 @@ void ping(std::string address, int port)
     {
       receivedPings += 1;
       std::cout << "send ping from " << address;
-      std::cout << ": icmp_seq=" << i << " time=" << rtt << " ms" << std::endl;
+      std::cout << ": icmp_seq=" << (i+1) << " time=" << rtt << " ms" << std::endl;
     }
     else
     {
       std::cout << "send ping from " << address;
-      std::cout << ": icmp_seq=" << i << " time=lost" << std::endl;
+      std::cout << ": icmp_seq=" << (i+1) << " time=lost" << std::endl;
     }
   }
 

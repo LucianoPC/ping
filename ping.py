@@ -74,10 +74,10 @@ def run_client(server_address, server_port):
 
         if rtt >= 0.0:
             received_pings += 1
-            variables = (server_address, i, rtt)
+            variables = (server_address, (i+1), rtt)
             print("send ping from %s: icmp_seq=%d time=%.3f ms" % variables)
         else:
-            variables = (server_address, i, "lost")
+            variables = (server_address, (i+1), "lost")
             print("send ping from %s: icmp_seq=%d time=%s" % variables)
 
     final_time = current_milli_time()
