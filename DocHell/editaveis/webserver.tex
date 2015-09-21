@@ -1,0 +1,55 @@
+\chapter[Webserver]{Cliente Ping}
+
+\section{Linguagem de programação}
+
+    A linguagem de programação adotada foi o C++, e também foi usado a linguagem
+    python para implementar o exemplo que já estava no código ping.py
+
+\section{Sistema operacional}
+
+    O sistema operacional usada para implementar a solução proposta foi a distro
+    linux Debian.
+
+\section{Ambiente de desenvolvimento}
+
+    Para o desenvolvimento da aplicação  foram usados: um editor de texto e um
+    compilador.
+
+    O editor de texto escolhido foi o vim e o compilador usado foi o g++.
+
+    O grupo utilizou git para o desenvolvimento do trabalho, visto que
+    precisávamos trabalhar de forma destrubuída, divindo tarefas para cada
+    integrante do grupo, para que assim todos pudessem participar do trabalho.
+
+    O repositório git encontra-se em: \href{https://github.com/LucianoPC/ping}{Repositório do projeto}
+
+\section{Implementação}
+
+    A implementação do cliente ping foi feita tanto em c++ quanto em python,
+    para ambas as linguagens utizou-se da mesma lógica, primeiro foi feito uma
+    função para calcular o RTT, que é o tempo que leva para enviar uma mensagem
+    para o servidor e receber uma mensagem de volta, se a mensagem de volta não
+    for recebida, ou seja, demorar mais de um segundo, é dado como falha na
+    comunicação com o servidor, e a função do RTT retorna -1. Utilizando essa
+    função que calcula um RTT foi implementado uma função que envia 10
+    mensagens, uma após a outra, e mostra o RTT de cada mensagem, ou avisa que
+    ocorreu uma falha na transmissão da mensagem entre o cliente e o servidor,
+    devido ao RTT retornar o valor -1.
+
+\section{Instruções de uso}
+
+    Primeiramente deve-se executar o programa do servidor, para isso é
+    necessário ter o python instalado no computador, e então no diretório raiz
+    executar o comando './ping.py -s localhost', a porta padrão é a 2081,
+    caso tenha algum problema com a porta, ela pode ser alterada, para isso
+    deve-se executar o seguinte comando './ping -s localhost -p [server-port]'.
+
+    Para executar o programa implementado em c++, primeiro deve-se compilar a
+    aplicação, é necessário: possuir o compilador g++, estar no diretório raiz
+    da aplicação e executar o comando make. Uma vez compilada, deve-se executar
+    o comando './ping [server-address]', se necessário alterar a porta, execute
+    o seguinte comando './ping [server-address] [server-port]'.
+
+    Para executar o programa implementado em python, basta executar o comando
+    './ping.py [server-address]', se necessário alterar a porta, execute o
+    seguinte comando './ping.py [server-address] -p [server-port]'

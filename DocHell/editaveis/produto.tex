@@ -1,0 +1,456 @@
+\chapter{Produto}\label{produto}
+
+\section{Introdução a Ferramenta Lettuce}
+
+    Neste tópico, será descrito o guia criado pelo grupo quanto ao uso da
+    ferramenta \textit{lettuce} para automatização de cenários de testes
+    baseados em BDD. Vale ressaltar que o guia aqui apresentado visa a
+    integração dessa ferramenta com o framework para desenvolvimento web django.
+    Apesar do django ser implementado usando a linguagem python, o grupo não
+    pode garantir que o tutorial aqui descrito poderá ser aplicado de forma
+    literal para projetos em python que não estejam usando o django. Por fim,
+    vale ressaltar que o grupo ainda planeja criar vídeos mostrando os passos
+    descritos neste tutorial, facilitando assim a visualização dos mesmos.
+
+\section{Instalação de Dependências e Configurações}
+
+    Neste tópico será mostrado como instalar e configurar a ferramenta lettuce
+    para ser usada juntamente com projetos django. Vale ressaltar que o
+    tutorial parte do pressuposto de que o framework django e o gerenciador de
+    pacotes para python, pip, já estejam instalados na máquina do usuário.
+
+    Para instalar o lettuce ao projeto, basta usar o comando:
+
+    \begin{verbatim}
+    $pip install lettuce
+    \end{verbatim}
+    
+    Uma vez instalada a ferramenta, é necessário adicionar a mesma o lettuce à
+    variável INSTALLED\_APPS do django. Tal variável é na verdade uma lista
+    contendo os diferente apps que compõem o projeto. Desa forma, basta
+    adicionar a lista de variáveis a instrução "lettuce.django" confome o código
+    a seguir:
+
+    \begin{verbatim}
+    INSTALLED_APPS = (
+        'django.contrib.auth',
+        'django.contrib.admin',
+
+        # other apps
+
+        'lettuce.django',
+        )
+    \end{verbatim}
+
+    Uma vez configurada as variáveis de ambiente do django, os testes já podem
+    começar a ser escritos. Entretanto, é necessário explicar antes como
+    funciona a estrutura de testes para um projeto lettuce. A ferramenta
+    necessita que os testes relacionados a ela estejam dentro de uma pasta
+    chamada "features". Dentro desta pasta, dois tipos de arquivos devem estar
+    presentes:
+
+
+    \begin{itemize}
+         \item \textbf{feature}: Arquivo usado para descrever o cenário de
+             teste. Tal arquivo é basicamente a definição do passo-a-passo que
+             será seguido pela ferramenta na hora de executar o teste. A
+             estrutura desse arquivo pode ser vista no código á seguir:
+
+
+	     \begin{verbatim}
+	     Feature: Register user
+   	     As an admin
+         I want to register an user
+	     So I can have a new user on the system
+
+             Scenario: Register user
+             Given I am on main page
+             And I enter the user name "Test"
+             When I press the button register
+             Then I should see "Test registered with success"
+	     \end{verbatim}	
+
+	     Esse arquivo deve possuir duas estruturas básicas, a feature, que é seria a descrição
+	     da história de usuário a cujo teste esta relacionado. Além da própria
+	     história de usuário, é necessário também a descrição do cenário que
+	     vai ser testado para a história descrita. A ferramenta lettuce usa a
+	     estrutura gherkin para escrever seus cenários de teste, facilitando
+	     assim que a mesma possa ser escrita por qualquer membro do projeto, não
+	     necessitando necessariamente de um conhecimento técnico.
+
+         Por fim, vale dizer que este arquivo precisar ter a extensão
+         ".feature". Além disso, é possível configurar este arquivo para
+         facilitar ainda mais a escrita dos testes relacionados ao cenário
+         descrito no arquivo, entretanto, isso será melhor explorado na próxima
+         seção.
+
+        \item \textbf{steps}: Arquivo python que irá conter a estrutura
+            necessária para a execução do cenário descrito no arquivo .feature
+            relacionado. Para que este arquivo seja executado com sucesso, é
+            necessário que o arquivo .feature esteja presente no mesmo diretório
+            que ele. A estrutura de teste desse arquivo será explicada na
+            próxima seção do guia.
+
+     \end{itemize}
+
+    
+
+\section{Estrutura dos Testes}
+
+    Neste tópico, a estrutura básica de um arquivo de teste da ferramenta
+    lettuce será descrita. Todo o teste deve ser escrito dentro do arquivo
+    steps.py. Este será o script python responsável pela execução dos testes
+    propriamente ditos.
+
+    Antes de mostrar como escrever os testes baseados em um arquivo .feature, é
+    necessário antes importar algumas bibliotecas. Dessa forma, dentro do
+    arquivo steps.py, adicione as seguintes linhas:
+
+    \begin{verbatim}
+    from lettuce import *
+    \end{verbatim}
+
+    Este comando irá garantir que os módulos associados ao lettuce serão
+    importados. Com esse passo realizado, é necesário fazer ainda sim outra
+    configuração. Considerando que o lettuce é uma ferramenta black box em sua
+    essência, os testes implementados pela ferramenta serão todos funcionais.
+    Entretanto, como as aplicações escritas em django são aplicações web, para
+    realizar o teste funcional, é necessário um browser para que a aplicações
+    possa ser de fato acessada. Sendo assim, é necessário isolar o browser de
+    alguma forma dos testes, para que o mesmo não se torne uma dependência.
+    Felizmente, a framework django possui uma classe específica para simular o
+    uso de um browser, a classe Client. Para importá-la no projeto, é necessário
+    adicionar a seguinte linha no começo do steps.py:
+
+    \begin{verbatim}
+    from django.test import Client
+    \end{verbatim}
+
+    Com este módulo importado, é necessário agora instanciar um objeto Client.
+    Vale ressaltar que o mesmo será usado ao longo de todos os testes, sendo
+    assim, tal objeto deve poder ser usado por qualquer caso de teste e deve ser
+    instanciado antes dos casos de teste serem executados. Para isso, pode-se
+    usar o seguinte comando:
+
+    \begin{verbatim}
+    @before.all
+    def set_browser():
+        world.browser = Client()
+    \end{verbatim}
+
+    A anotação \textit{@before.all} comunica ao script de teste que o método
+    deve ser executado antes da execução dos testes. Dentro do método
+    set\_browser, uma instância de client está sendo criada e associado a uma
+    variável global. A declaração \textbf{world} antes do nome de uma variável
+    garante que a mesma será global, ou seja, será visível para qualquer caso de
+    teste.
+
+    Com essas configurações, pode-se enfim começar a escrita de um caso de teste
+    propriamente dito. Todo caso de teste deve possuir um passo associado a ele,
+    ou seja, cada caso de teste deve estar associado a um passo definido na
+    estrutura \textit{scenario} presente no arquivo .feature associado. Para
+    isso, todo caso de teste deve possuir a seguinte anotação:
+
+    \begin{verbatim}
+    @step{"Given I am in the home page"}
+    \end{verbatim}
+
+    Vale ressaltar que dentro da anotação \textit{step}, deve-se conter a mesma
+    definição de passo criada em um arquivo .feature. Por exemplo, se um dos
+    passos descritos no arquivo .feature é "When I click on button search", o
+    teste relacionado a este passo deve possuir uma anotação \textit{step}
+    exatamente igual ao descrito na feature.
+
+    Com a anotação \textit{step} definida, pode-se então descrever a estrutura
+    do método de teste propriamente dito. Logo após a anotação, deve-se declarar
+    um método que possui sempre um parâmetro default, chamado de \textit{step}.
+    Um exemplo de declaração de um caso de teste para a ferramenta lettuce pode
+    ser visto logo a seguir:
+
+    \begin{verbatim}
+    @step('I am on application home page"')
+    def i_am_on_application_home_page(step):
+        #do something here
+    \end{verbatim}
+
+    O caso de teste deve então possuir código relacionado ao \textit{step}
+    especificado. Neste cenário, pode-se usar desde outro frameworks de teste
+    para python, como o nose, para permitir o uso de asserções. Entretanto,
+    o step será considerado como válido apenas se as instruções dentro do
+    método de teste não obtiverem problema na hora da execução, ou seja, não é
+    ncessário usar asserções para que o teste passe.
+
+    Uma feature interessante, que precisa ser descrita, é a possibilidade de um
+    passo descrito dentro do arquivo .feature ser capaz de passar um parâmetro
+    para um método de teste. Para isso, é necessário que a variável dentro de um
+    passo no arquivo ,feature seja especificada entre aspas. Um exemplo desse
+    modelo pode ser visto a seguir:
+
+    \begin{verbatim}
+    And I type "205" in the field search lines
+    \end{verbatim}
+
+    Observa-se que o 205 está entre aspas, sendo assim, o mesmo pode ser
+    considerado uma variável. Com este padrão definido, pode-se assim capturar
+    tal variável de forma mais fácil dentro da anotação \textit{step} antes do
+    método de teste. Um exemplo disso pode ser observado a seguir:
+
+    \begin{verbatim}
+    @step(And I type "(.*)" in the field search lines)
+    def and_i_type_value_in_the_field_seach_lines(steo, value):
+        #do something here...
+    \end{verbatim}
+
+    Pode-se ver que dentro da anotação, existe agora uma expressão regular ou
+    regex dentro dela, isso é feito para capturar o padrão da variável. Qualquer
+    regex pode ser usada neste cenário, facilitando assim capturar determinados
+    padrões de variáveis. Vale ressaltar também que o próprio método de teste
+    deve também receber a variável ou variáveis capturadas pela regex quando se
+    usa tal funcionaliddade.
+
+    Por fim, uma vez que já tenha escrito algum teste ou completado todos os
+    passos para o cenário descrito no arquivo .feature, pode-se rodar os testes
+    com o comando mostrado a seguir:
+
+    \begin{verbatim}
+    $python manage.py harvest
+    \end{verbatim}
+
+    Tal comando irá percorrer todos os apps do projeto procurando por uma pasta
+    feature\. Uma vez encontrada, o mesmo irá então executar o arquivos steps.py
+    presente no diretório. Sendo assim, a pasta feature crida tem que estar
+    dentro do diretório raiz do app relacionado para que este comando funcione
+    de forma adequada. Uma vez executado, o mesmo irá mostrar quais passos foram
+    executados, especificando quais passaram e quais falharam, A visualização
+    dos resultados será melhor explicada na próxima seção.
+
+\section{Exemplo de Funcionamento}
+
+    Baseado no guia proposto, foi desenvolvido um cenário de teste completo
+    usando a ferramente Lettuce para o software Busine.me. Para a criação de um
+    caso de teste, foi necessário escrever uma das funcionalidades do aplicativo
+    como uma história de usuário além de também escrever um dos seus critérios
+    de aceitação.  A funcionalidade escolhida foi a busca por linhas de ônibus por
+    meio da aplicação, e o cenário de aceitação escolhido foi para o
+    procedimento de busca para uma linha válida. Tanto a história de usuário e
+    seu critério de aceitação podem ser vistos a seguir:
+
+    \begin{verbatim}
+    Feature: Search busline
+    In order to check a busline
+    As an user
+    I want to search for a busline
+
+    Scenario: Search by line number
+        Given I am on Busine.me home page
+        And I type "205" in the field search lines
+        When I press "Search"
+        Then I should see "Resultados"
+        And I should see "2" buslines that contains "205" in their numbers
+   \end{verbatim}
+
+   Vale ressaltar que a história de usuário e o cenário descritos estão em
+   inglês para seguir o padrão de codificação usado pela própria ferramenta.
+   Dessa forma, qualquer linguagem pode ser usada, contanto que a convenção da
+   linguagem gherkin seja usada, ou seja, as anotações e conectivos, como
+   \textit{And} e \textit{Given} devem estar em inglês.
+
+   Com o arquivo .feature criado, o arquivo steps.py foi também criado. A
+   estrutura do arquivo pode ser vista na figura a seguir:
+
+    \begin{figure}[h!]
+        \centering
+        \includegraphics[width=0.9\textwidth]{figuras/steps.eps}
+        \caption{Código desenvolvido para verificar o critério de aceitação
+        definido}
+    \end{figure}
+
+    As marcações nesta figura servem para explicar os seguinte conceitos:
+
+    \begin{itemize}
+        \item \textbf{(1)}: Aqui estão as bibliotecas necessárioas para a
+            execução dos testes. Dentre elas, pode ser visto a biblioteca
+            \emph{django.test.client} que é usada para usar o browser de teste
+            citada na parte de configuração do guia. Outra biblioteca que vale a
+            pena ser comentada é a \emph{nose.tools} que é uma biblioteca python
+            usada para criação de testes unitários. Dessa forma, a mesma suporta
+            métodos associados a asserção, como o \textit{assert\_equals} que é
+            usado no arquivo.
+        
+        \item \textbf{(2)}: Aqui está declarada a função que realiza a
+            configuração usada antes de qualquer teste ser iniciado. Esta função
+            está basicamente instanciando um browser de teste, \textit{Client} e
+            especificando as outras variáveis necessárias.
+
+        \item \textbf{(3)}: Caso de teste para o primeiro passo do cenário de
+            aceitação especificado. Basicamente, uma requisição está sendo usada
+            para acessar a home page da aplicação Busine.me.
+
+        \item \textbf{(4)}: Caso de teste usado para configurar para setar o
+            valor a ser procurado pela aplicação.
+
+        \item \textbf{(5)}: Caso de teste usado para verificar o terceiro passo
+            do cenário de aceitação. Ele basicamente manda uma requisição do
+            tipo \textit{POST} para a página de busca usando o valor
+            especificado no caso de teste anterior. Após mandar a requisição, o
+            seu código é verificado para saber se a requisição foi bem sucedida.
+
+        \item \textbf{(6)}: Caso de teste usado para verificar se a página
+            carregada é a pretendida ao verificar se a palavra "Resultados" está
+            dentro do html recebido como resposta.
+
+        \item \textbf{(7)}: Caso de teste usado para verificar se a página
+            carregada contém o número de linhas especificado pelo último passo
+            do cenário de aceitação. Basicamente, checa-se o html recebido e
+            conta-se o número de vezes que o valor pesquisado aparece no corpo
+            do html. 
+
+    \end{itemize}
+
+    Vale ressaltar que os valores setados no arquivo .feature são todos
+    capturados no testes do steps.py por meio do uso de expressões regulares ou
+    regex.
+
+    Ao executar os testes, a seguinte imagem é exibida:
+
+    \begin{figure}[h!]
+        \centering
+        \includegraphics[width=0.9\textwidth]{figuras/results_1.eps}
+        \caption{Resultado da execução dos testes usando python manage.py 
+        harvest}
+    \end{figure}
+
+    Pode ser ver que todos os cenários passaram. Entrentanto, o comando "python
+    manage.py harvest" busca por features em todos os apps do projeto, dessa
+    forma, como apenas foi criada features em um dos apps do projeto, a
+    ferramenta indica que nenhuma feature foi encontrada nos outros apps do
+    projeto.
+
+    Apesar do teste atender às necessidades levantadas, o mesmo ainda pode
+    apresentar algumas complicações. Quando se pensa em usar uma ferramenta como
+    o lettuce, em tese, partes especificas do código deveriam ser evitadas na
+    hora da contrução do steps.py. Entretanto, para o arquivo de teste feito,
+    aspectos como o tipo de requisição feita e o nome da variável na requisição
+    precisaram ser conhecidos, sendo assim, um nova forma de teste foi
+    implementada. Esta nova forma de teste usa duas novas ferramentas:
+
+    \begin{itemize}
+
+        \item \textbf{splinter}: Ferramenta usada para testes de aceitação
+            automatizados para python, ou seja, tal ferramenta permite
+            abstração de detalhes de desenvolvimento para interação com a
+            aplicação. Usando o splinter, pode-se pedir que o mesmo clique em
+            algum botão na tela, ou digite algum valor em algum campo de texto,
+            sendo necessário detalhes como o nome dos campos a serem
+            interagidos. Entretanto, a ferramenta splinter precisa de um browser
+            para ser usado, é a versão usada para testes do django não é
+            suportada.
+
+            Para instalar a ferramenta. basta executar o seguinte comando no
+            terminal:
+
+            \begin{verbatim}
+            pip install splinter
+            \end{verbatim}
+
+        \item \textbf{zope.testbrowser}: O problema do browser do splinter foi
+            resolvido usando essa ferramenta. Ao usar o splinter com um browser
+            default, para todos os testes ele abre uma instância do browser e
+            começa a executar os comando no mesmo. Por exemplo, caso o browser
+            default seja o firefox, o splinter iria abrir tal browser durante os
+            testes e executar os comandos nele. Para evitar esse problema
+            durante a execução dos testes, um browser que rode em background foi
+            usado, chamado de zope.browser, permitindo assim que o splinter
+            execute os testes sem abrir nenhum browser gráfico.
+
+            Para instalar tal ferramenta, basta executar o comando:
+
+            \begin{verbatim}
+            pip install splinter[zope.testbrowser]
+            \end{verbatim}
+
+        \end{itemize}
+
+
+    Com essa nova abordagem de teste, um novo cenário de aceitação foi usado,
+    que pode ser visto a seguir:
+
+    \begin{verbatim}
+    Feature: Search busline
+    	In order to check a busline
+   	As an user
+    	I want to search for a busline
+
+    Scenario: Search by line number
+        Given I am on Busine.me home page
+        And I type "205" in the field search lines
+        When I press "Search"
+        Then I should see "Resultados"
+        And I should see "0.205 \n Rota:Gama Sul-Leste/"M" Norte ( Comercial) \n VIA ACES. HRG/OESTE - GAMA \n Percurso: 45.78 KM \n Tarifa: R$3.0"
+    \end{verbatim}
+
+    Basicamente, a mundaça feita foi apenas no última passo do cenário de
+    aceitação, pois a validação com o splinter permite um acesso mais fácil a
+    alguns campos do html recebido como resposta.
+
+    O arquivo steps.py para o uso da ferramenta splinter pode ser visto na
+    Figura 03:
+
+     \begin{figure}[h!]
+        \centering
+        \includegraphics[width=0.9\textwidth]{figuras/splinter.eps}
+        \caption{Arquivo steps.py usando a ferramenta splinter para auxiliar nos
+        testes}
+    \end{figure}
+
+    Para este novo arquivo de teste, algumas considerações precisam ser feitas
+    quanto a sua estrutura:
+
+    \begin{itemize}
+
+        \item \textbf{(1)}: Pode-se ver que uma nova biblioteca precisou ser
+            importada, que seria a \textit{splinter.browser}, é por meio dela
+            que uma isntância do browser para o teste deverá ser criada.
+
+        \item \textbf{(2)}: Na função que executa antes de todos os testes, o
+            browser é instanciado, lembrando que o browser é a ferramenta
+            zope.browser.
+
+        \item \textbf{(3)}: Caso de teste usado para acessar a página inicial da
+            aplicação Busine.me. Tal caso de teste é igual ao definido no
+            arquivo steps.py sem a ferramenta splinter.
+
+        \item \textbf{(4)}: Caso de teste usado para prencher o campo de busca
+            da aplicação.
+
+        \item \textbf{(5)}: Caso de teste usado para mandar a requisição de
+            busca. Aqui pode ser visto uma das facilidades e se usa o splinter.
+            Basta usar comando como \textit{click} para enviar a requisição,
+            não mais sendo necessário saber o tipo de requisição necessária.
+
+        \item \textbf{(6)}: Caso de teste usado para verificar se a página de
+            resultados foi carregada. Mais uma vez, pode-se ver uma das
+            facilidades do splinter, pois o mesmo permite a interação com o html
+            recebido de forma mais clara.
+
+        \item \textbf{(7)}: Caso de teste usado para verificar se as informações
+            necessárias estão presentes na página.
+
+    \end{itemize}
+
+    Assim como o steps.py anterior, este também coleta os valores passados pelo
+    passos do cenário de aceitação por uso de expressões regulares. Ao executar
+    tais casos de teste, obtêm-se o seguinte resultado:
+
+      \begin{figure}[h!]
+        \centering
+        \includegraphics[width=0.9\textwidth]{figuras/results_2.eps}
+        \caption{Resultado dos testes usando o splinter ao rodar o comando
+        python manage.py harvest}
+    \end{figure}
+
+    Pode-se ver que os cenários também passaram todos, mostrando que ambas as
+    aborsagens podem ser usadas, mas vale ressaltar que a segunda abordagem. que
+    usa o splinter, gera mais dependênias no projeto, o que pode ser um
+    problema.
+
